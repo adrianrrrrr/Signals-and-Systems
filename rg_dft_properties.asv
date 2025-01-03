@@ -1,18 +1,17 @@
 %   File name: rg_dft_properties.m
 %   
-%   Author: Adrián Ramos González. Professor. 
+%   Author: Adrián Ramos González. Professor(ESEIAAT-UPC). 
 %   Email: adrian.ramos.gonzalez@upc.edu
 %
 %   Description: 
-%   Lab 4 part of Signal and Systems subject from The School of Industrial,
+%   Lab 4 part of the Signal and Systems subject from The School of Industrial,
 %   Aerospace and Audiovisual Engineering of Terrassa (ESEIAAT). 
 %
 %   Discrete Fourier Transform (DFT) is performed in a set of basic
 %   signals. Some experiments are run to check basic properties, artifacts
-%   and phenomenon happening due mathematical properties of the Fourier
-%   Transform applied to discrete systems as in Matlab.
+%   and phenomenon happening due the mathematical characteristics of the Fourier
+%   Transform when applied to discrete/digital systems (As in Matlab).
 %   
-%   Variables: 
 %
 %%
 clear all; close all; clc;
@@ -221,7 +220,6 @@ stem(angle(Y1)), ylabel('\Phi_X[k]'), xlabel('k')
 %   Ex. 15: DFT N=512 (Window-applied signal)
 N = 512;
 Ydft = fft(y1,N);
-% Representacio de la transformada
 figure(3)
 subplot(311)
 stem(n1,y1), ylabel('y1[n1]'), xlabel('n1')
@@ -242,26 +240,70 @@ title('x[n],|Xdft[k]| and |Ydft[k]| for N=512'), ylabel('x[n]'), xlabel('n')
 subplot(312)
 stem(abs(Xdft)), ylabel('|Xdft[k]|'), xlabel('k')
 subplot(313)
-stem(abs(Ydft)), ylabel('\Ydft[k]'), xlabel('k')
+stem(abs(Ydft)), ylabel('Ydft[k]'), xlabel('k')
 
-%   17, 18: Experimental (Use Matlab's stem GUI to mesasure)
+%   Ex. 17, 18: Experimental (Use Matlab's stem() GUI to mesasure)
 main_lobe = 36;
 sec_lobe = 8;
 % Measurement of intensity level which is related to energy:
-G = 20*log10(abs(main_lobe/lobul_sec)); 
-fprintf("Main / secondary lobe ratio  = %.2f% dB \n",G);
+G = 20*log10(abs(main_lobe/sec_lobe)); 
+fprintf("Main over secondary lobe ratio  = %.2f dB \n",G);
 
 
-%% 19   DFT properties TODO
-
-no = 10;
+%   Ex. 19: DFT properties
+no = 10; % We should get a delay of 10 samples (Check theory)
 N = 512;
 k = 0:N-1;
-Ydft1=Ydft.*exp((-j*2*pi*no.*k)/N)
-zn=ifft(Ydft1)
-zn = zn(11:29)
-figure(8)
+Ydft1 = Ydft.*exp((-1i*2*pi*no.*k)/N);
+zn = ifft(Ydft1);
+y1_19 = [y1 zeros(1,no)];
+
+figure(5)
 subplot(211)
-stem(zn)
+stem(zn(1:length(y1_19))), ylabel('zn[n]'), xlabel('n')
 subplot(212)
-stem(y1)
+stem(y1_19), ylabel('y1[n]'), xlabel('n')
+title('y1[n] compared to zn[n] (Delay applied in frequency)')
+
+%   Ex. 20: Now with no=500. length(Ydft) = 512... We shoudl expect
+%   problems
+no = 500; % We should get a delay of 10 samples (Check theory)
+N = 512;
+k = 0:N-1;
+Ydft1 = Ydft.*exp((-1i*2*pi*no.*k)/N);
+zn = ifft(Ydft1);
+y1_19 = [y1 zeros(1,no)];
+
+figure(6)
+subplot(211)
+stem(zn), ylabel('zn[n]'), xlabel('n') % This is modified to prevent crash
+% We can see some cyclic nature. Signal is advanced 12 samples
+subplot(212)
+stem(y1_19), ylabel('y1[n]'), xlabel('n')
+title('y1[n] compared to zn[n] (Delay applied in frequency)')
+
+%   Ex. 21: 
+n = 0:18;
+y2 = y1.*exp((1i*2*pi*n)/4);
+N = 512;
+Zdft = fft(y2,N);
+figure(7)
+subplot(211)
+stem(abs(Ydft)), ylabel('|Ydft[k]|'), xlabel('k')
+title('Ydft[k] compared to Zdft[k] with negative delay applied in time ')
+subplot(212)
+stem(abs(Zdft)), ylabel('|Zdft[k]|'), xlabel('k')
+
+%%   Ex. 22: Convolution property.
+L = 6;
+n = 0:L-1;
+x = sv_pL(n,L);
+y = conv(x,x)
+ny = 0:2*L
+
+figure(1)
+subplot(211)
+stem(n,x), ylabel('x[n]'), xlabel('n')
+title('Ydft[k] compared to Zdft[k] with negative delay applied in time ')
+subplot(212)
+stem(abs(Zdft)), ylabel('|Zdft[k]|'), xlabel('k')
