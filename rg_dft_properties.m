@@ -173,7 +173,7 @@ subplot(311)
 stem(n,x), xlabel('n'), ylabel('x original')
 grid on;
 subplot(312)
-n_old = 0:L_old-1
+n_old = 0:L_old-1;
 stem(n_old,y_old), xlabel('n'), ylabel('x reconstructed L=N=30')
 grid on;
 subplot(313)
@@ -298,8 +298,8 @@ stem(abs(Zdft)), ylabel('|Zdft[k]|'), xlabel('k')
 L = 6;
 n = 0:L-1;
 x = sv_pL(n,L);
-y = conv(x,x)
-ny = 0:2*(L-1)
+y = conv(x,x);
+ny = 0:2*(L-1);
 
 figure(1)
 subplot(211)
@@ -401,3 +401,96 @@ if is_causal
 else 
     fprintf("Non-causal filter\n")
 end 
+
+%%   Ex. 31: Now with N=4098
+
+% DESIGN PARAMETERS
+Fc = 1/4; % Cuttoff frequency (Normalized)
+N = 4098; % Number of coefficients a.k.a. FIR filter order
+
+k = 0:N-1; % Vector of frequency samples 
+H = ones(1,N); % Initizaliation of the filter as no filter
+
+% Have in mind Matlab's infamous vector indexing! This is 99% of this
+% design comlexity. The implementation. 
+Cutoff = floor(N*Fc); % Discrete cutoff frequency
+k1 = 0:Cutoff-1;
+H1 = exp(-1i*pi.*k1);
+
+Nyquist_freq = N/2; % Limit freq. 
+k2 = Cutoff:Nyquist_freq-1; % Vector of samples reaching limit freq.
+N2 = length(k2); % Size of samples until reaching limit freq. 
+H2 = zeros(1,N2);
+
+% Now I paste H1 and H2, then compute its complex conjugate
+H3 = [H1 H2];
+H4 = flip(H3);
+H4 = conj(H4);
+% Last step is to create the symetry 
+H = [H3 H4];
+
+figure(2)
+subplot(311)
+stem(k,abs(H)), ylabel('|H[k]|'), xlabel('k')
+title(sprintf('H[k] designed with Fc=%1.2f and N=%d',Fc,N))
+subplot(312)
+stem(k,angle(H)), ylabel('\Phi_H[k]'), xlabel('k')
+h = ifft(H,N);
+h = abs(h); % Discarting little errors from Matlab computations
+L = N;
+n = 0:L-1;
+subplot(313)
+stem(n,h), ylabel('h[n]'), xlabel('n')
+
+is_causal = all(H==conj(flip(H)));
+if is_causal
+    fprintf("The filter is causal\n")
+else 
+    fprintf("Non-causal filter\n")
+end 
+
+%%  Ex. 32-33: Window applied to ideal impulse response
+
+L = 126; % Length of the temporal window
+Fc = 1/4;
+n1 = -L/2:L/2;% Exercise specs
+h1 = 2*Fc*sinc(2*Fc.*n1);
+H1 = fft(h1);
+N1 = length(H1);
+k1 = 0:N1-1;
+
+figure(3)
+subplot(311)
+stem(k1,abs(H1)), ylabel('|H[k]| from ideal impulse response'), xlabel('k')
+title(sprintf('H[k] designed with Fc=%1.2f and N=%d',Fc,N1))
+subplot(312)
+stem(k1,angle(H1)), ylabel('\Phi_H[k]'), xlabel('k')
+subplot(313)
+stem(n1,h1), ylabel('h[n]'), xlabel('n')
+
+% Increasing filter length, increase resolution which improve HF response
+% at expenses with the must of more memory (More coeficients) == more delay
+% Play with it!
+% Also, freq design shows phase rotation but constant phase (causal). Time
+% design has some delay by design. 
+
+%%  Ex. 34: Parks-McClellan ideal FIR filter design
+clear all; clc; 
+
+Fc = 1/4;
+[n,fo,ao,w] = firpmord([Fc Fc+0.01],[1 0],[0.001 0.01]);
+b = firpm(n,fo,ao,w);
+H2 = freqz(b,1,[]);
+N2 = length(H2);
+k2 = 0:N2-1;
+h2 = ifft(H2,N2);
+n2 = 0:N2-1;
+
+figure(4)
+subplot(311)
+stem(k2,abs(H2)), ylabel('|H[k]| from ideal impulse response'), xlabel('k')
+title(sprintf('H[k] designed with Fc=%1.2f and N=%d',Fc,N2))
+subplot(312)
+stem(k2,angle(H2)), ylabel('\Phi_H[k]'), xlabel('k')
+subplot(313)
+stem(n2,h2), ylabel('h[n]'), xlabel('n')
