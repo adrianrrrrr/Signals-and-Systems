@@ -357,7 +357,6 @@ linkaxes(ax, 'xy'); % Link both x and y axes
 %%  Ex. 30: FIR LPF design by frequency sampling
 clear all; close all; clc;
 
-% DESIGN PARAMETERS
 Fc = 1/4; % Cuttoff frequency (Normalized)
 N = 128; % Number of coefficients a.k.a. FIR filter order
 
@@ -385,19 +384,16 @@ H = [H3 H4];
 figure(1)
 subplot(311)
 stem(k,abs(H)), ylabel('|H[k]|'), xlabel('k')
-title(sprintf('H[k] designed with Fc=%1.2f and N=%d',Fc,N))
-subplot(312)
+title('H[k] designed with Fc=1/4 and N=128')
+subplot(212)
 stem(k,angle(H)), ylabel('\Phi_H[k]'), xlabel('k')
-h = ifft(H,N);
-h = abs(h); % Discarting little errors from Matlab computations
-L = N;
+h = ifft(H,N)
+h = abs(h) % Discarting little errors from Matlab computations
+L=N;
 n = 0:L-1;
-subplot(313)
-stem(n,h), ylabel('h[n]'), xlabel('n')
+subplot(213)
+stem(n,), ylabel('\Phi_H[k]'), xlabel('n')
 
 is_causal = all(H==conj(flip(H)));
-if is_causal
-    fprintf("The filter is causal\n")
-else 
-    fprintf("Non-causal filter\n")
-end 
+if is_causal:
+fprintf("The ")
